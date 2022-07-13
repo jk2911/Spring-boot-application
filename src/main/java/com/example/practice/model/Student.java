@@ -25,8 +25,7 @@ public class Student {
 
     @Override
     public String toString() {
-        return "\nid: " + id +
-                "\nname: " + name +
+        return "\nname: " + name +
                 "\nlastname: " + lastname +
                 "\npatronic: " + patronic +
                 "\ncourse: " + course +
