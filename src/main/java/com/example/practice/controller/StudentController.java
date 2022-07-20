@@ -5,8 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import javax.xml.bind.JAXB;
+
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,40 +24,58 @@ public class StudentController {
     int SID;
 
     @ResponseBody
-    @GetMapping("/")
-    public String Students(/*@RequestHeader(value = "Accept", defaultValue = "") String accept,*/
-        @RequestParam(name="SID",  required = true) int SID,
-         @RequestParam(name="faculty", defaultValue = "", required = false) String faculty,
-         @RequestParam(name="id", defaultValue = "-1", required = false) int Id,
-         Model model){
-        /*if(accept.compareTo("") == 0)
-            return "Error";*/
-
+    @GetMapping("/students")
+    public String listStudents(@RequestHeader(value = "Accept") String[] headers,
+    @RequestParam(name = "SID", required = true) int SID){
         this.students=getStudents(SID);
-
-        String message="<!DOCTYPE html>" +
-        "<html lang=\"en\">"+
-        "<head>"+
-            "<meta charset=\"UTF-8\">"+
-            "<title>Main page</title>"+
-        "</head>"+
-        "<body>" +
-        "<p>";
-        if(Id != -1){
-            this.students = getStudentsOnId(Id);
+        for(int i = 0 ; i < headers.length;i++){
+            if(headers.equals("application/xml"))
+                return getXML();
         }
-        else if(!faculty.equals(""))
-            this.students = getStudentsOnFaculty(faculty);
-
-        for(Student student: this.students){
-            message += student + "</p><p>";
-        }
-        message += "</p></body></html>";
-        return message;
+        Gson gson=new Gson();
+        String list=gson.toJson(students);
+        return list;
     }
 
-    public ArrayList<Student> getStudentsOnFaculty(String faculty){
-        ArrayList<Student> temp=new ArrayList<Student>();
+    @ResponseBody
+    @GetMapping("/faculty")
+    public String listStudentsOnFaculty(@RequestHeader(value = "Accept") String[] headers,
+    @RequestParam(name = "SID", required = true) int SID,
+    @RequestParam(name = "faculty", required = false) String faculty){
+        this.students=getStudentsOnFaculty(SID, faculty);
+        for(int i = 0 ; i < headers.length;i++){
+            if(headers.equals("application/xml"))
+                return getXML();
+        }
+        Gson gson=new Gson();
+        String list=gson.toJson(students);
+        return list;
+    }
+
+    @ResponseBody
+    @GetMapping("/id")
+    public String studentOnID(@RequestHeader(value = "Accept") String[] headers,
+    @RequestParam(name = "SID", required = true) int SID,
+    @RequestParam(name = "id", required = false) int id){
+        this.students=getStudentsOnId(SID, id);
+        for(int i = 0 ; i < headers.length;i++){
+            if(headers.equals("application/xml"))
+                return getXML();
+        }
+        Gson gson=new Gson();
+        String list=gson.toJson(students);
+        return list;
+    }
+
+    public String getXML(){
+        String list="";
+        JAXB.marshal(students, list);
+        return list;
+    }
+
+    public ArrayList<Student> getStudentsOnFaculty(int SID, String faculty){
+        ArrayList<Student> students=getStudents(SID);
+        ArrayList<Student> temp = new ArrayList<>();
         for(Student student: students){
             if(student.faculty.equals(faculty))
                 temp.add(student);
@@ -64,9 +83,10 @@ public class StudentController {
         return temp;
     }
 
-    public ArrayList<Student> getStudentsOnId(int Id){
+    public ArrayList<Student> getStudentsOnId(int SID, int Id){
+        ArrayList<Student> students=getStudents(SID);
         ArrayList<Student> temp=new ArrayList<Student>();
-        for(Student student: this.students){
+        for(Student student: students){
             if(student.id == Id){
                 temp.add(student);
                 break;
