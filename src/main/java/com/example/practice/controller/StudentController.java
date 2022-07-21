@@ -22,12 +22,26 @@ public class StudentController {
     String path = "students.json";
     ArrayList<Student> students = new ArrayList<Student>();
     int SID;
+    private final String XMLList = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><List>";
+    private final String XMLStudent = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><Student>\"";
 
     @ResponseBody
     @GetMapping("/students")
     public String listStudents(@RequestHeader(value = "Accept") String[] headers,
     @RequestParam(name = "SID", required = true) int SID){
         this.students=getStudents(SID);
+        for(int i = 0 ; i < headers.length;i++){
+            if(headers.equals("application/xml"))
+                return getXML();
+        }
+        Gson gson=new Gson();
+        String list=gson.toJson(students);
+        return list;
+    }
+    @ResponseBody
+    @GetMapping("/all")
+    public String listAll(@RequestHeader(value = "Accept") String[] headers){
+        this.students=getStudents(-1);
         for(int i = 0 ; i < headers.length;i++){
             if(headers.equals("application/xml"))
                 return getXML();
@@ -57,20 +71,41 @@ public class StudentController {
     public String studentOnID(@RequestHeader(value = "Accept") String[] headers,
     @RequestParam(name = "SID", required = true) int SID,
     @RequestParam(name = "id", required = false) int id){
-        this.students=getStudentsOnId(SID, id);
+        Student student=getStudentsOnId(SID, id);
         for(int i = 0 ; i < headers.length;i++){
             if(headers.equals("application/xml"))
-                return getXML();
+                return getXMLStudent(student);
         }
         Gson gson=new Gson();
-        String list=gson.toJson(students);
+        String list=gson.toJson(student);
         return list;
     }
 
     public String getXML(){
-        String list="";
-        JAXB.marshal(students, list);
-        return list;
+        StringBuilder resultXml = new StringBuilder(XMLList);
+        for(Student st : this.students){
+            resultXml.append("<Student>")
+            .append("<id>").append(st.id).append("</id>")
+            .append("<name>").append(st.name).append("</name>")
+            .append("<lastname>").append(st.lastname).append("</lastname>")
+            .append("<patronic>").append(st.patronic).append("</patronic>")
+            .append("<course>").append(st.course).append("</course>")
+            .append("<faculty>").append(st.faculty).append("</faculty>")
+            .append("</Student>");
+        }
+        resultXml.append("</List>");
+        return resultXml.toString();
+    }
+    public String getXMLStudent(Student st){
+        StringBuilder resultXml = new StringBuilder(XMLStudent);
+        resultXml.append("<id>").append(st.id).append("</id>")
+        .append("<name>").append(st.name).append("</name>")
+        .append("<lastname>").append(st.lastname).append("</lastname>")
+        .append("<patronic>").append(st.patronic).append("</patronic>")
+        .append("<course>").append(st.course).append("</course>")
+        .append("<faculty>").append(st.faculty).append("</faculty>")
+        .append("</Student>");
+        return resultXml.toString();
     }
 
     public ArrayList<Student> getStudentsOnFaculty(int SID, String faculty){
@@ -83,16 +118,16 @@ public class StudentController {
         return temp;
     }
 
-    public ArrayList<Student> getStudentsOnId(int SID, int Id){
+    public Student getStudentsOnId(int SID, int Id){
         ArrayList<Student> students=getStudents(SID);
-        ArrayList<Student> temp=new ArrayList<Student>();
-        for(Student student: students){
-            if(student.id == Id){
-                temp.add(student);
+        Student student=null;
+        for(Student st: students){
+            if(st.id == Id){
+                student=st;
                 break;
             }
         }
-        return temp;
+        return student;
     }
 
     public ArrayList<Student> getStudents(int SID){
@@ -108,6 +143,8 @@ public class StudentController {
 
         ArrayList<Student> students = gson.fromJson(json, new TypeToken<ArrayList<Student>>(){}.getType());
         ArrayList<Student> temp = new ArrayList<Student>();
+        if(SID==-1)
+            return students;
         int id = 0;
         for(Student student: students){
             if(student.id % 10 == SID){
