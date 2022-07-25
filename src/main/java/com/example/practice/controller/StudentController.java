@@ -19,6 +19,10 @@ import com.example.practice.model.Student;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Hidden;
+import springfox.documentation.annotations.ApiIgnore;
+
 
 
 
@@ -72,11 +76,12 @@ public class StudentController {
         return list;
     }
 
+    @Hidden
     @ResponseBody
     @GetMapping("")
-    public String index(HttpServletResponse res ) throws IOException{
+    public void index(HttpServletResponse res ) throws IOException{
         res.sendRedirect("/swagger-ui.html");
-        return null;
+        return;
     }
 
     @ResponseBody
