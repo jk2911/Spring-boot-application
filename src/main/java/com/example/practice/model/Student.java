@@ -1,5 +1,18 @@
 package com.example.practice.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.SwaggerDefinition;
+
+@XmlRootElement(name = "Student")
 public class Student {
     public static int count = 1;
     public int id;
@@ -8,6 +21,7 @@ public class Student {
     public String patronic;
     public int course;
     public String faculty;
+    public Student(){}
 
     private Student(String name, String lastname, String patronic, int course, String faculty) {
         this.id = count;
@@ -31,5 +45,4 @@ public class Student {
                 "\ncourse: " + course +
                 "\nfaculty: " + faculty;
     }
-
 }
